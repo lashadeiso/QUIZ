@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:alpine
+    networks:
+      - flask_network
+
+  postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_pass
+      POSTGRES_DB: flask_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - flask_network
+
+  flask_app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    command: python app.py
+    volumes:
+      - ./app:/usr/src/app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      REDIS_HOST: redis
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_pass
+      POSTGRES_DB: flask_db
+    networks:
+      - flask_network
+
+volumes:
+  db_data:
+
+networks:
+  flask_network:
+
